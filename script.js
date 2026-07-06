@@ -2,71 +2,79 @@
 const matrix = document.getElementById("matrix");
 const mtx = matrix.getContext("2d");
 
-const letters = "HAPPYBIRTHDAY";
+const LETTERS = "HAPPY BIRTHDAY";
+const LETTERS_LEN = LETTERS.length;
 let fontSize, columns, matrixStreams;
 
 function initMatrix() {
   matrix.width = innerWidth;
   matrix.height = innerHeight;
   const isMobile = innerWidth < 768;
-  fontSize = isMobile ? Math.max(18, Math.min(30, innerWidth / 40)) : Math.max(16, Math.min(28, innerWidth / 50));
+  fontSize = isMobile ? Math.max(18, Math.min(30, innerWidth / 30)) : Math.max(16, Math.min(28, innerWidth / 42));
   columns = Math.floor(matrix.width / fontSize);
 
   matrixStreams = [];
   for (let i = 0; i < columns; i++) {
+    const len = LETTERS_LEN + Math.floor(Math.random() * 7);
+    const chars = [];
+    const startOffset = Math.floor(Math.random() * LETTERS_LEN);
+    for (let j = 0; j < len; j++) {
+      chars.push(LETTERS[(startOffset + len - 1 - j) % LETTERS_LEN]);
+    }
     matrixStreams.push({
       y: Math.random() * -matrix.height,
-      speed: 0.4 + Math.random() * 0.6,
-      chars: [],
-      length: 8 + Math.floor(Math.random() * 12),
-      flashTimer: Math.random() * 100
+      speed: 0.06 + Math.random() * 0.1,
+      chars,
+      length: len,
+      startOffset,
+      flashTimer: Math.random() * 100,
+      _col: i
     });
-    for (let j = 0; j < matrixStreams[i].length; j++) {
-      matrixStreams[i].chars.push(letters[Math.floor(Math.random() * letters.length)]);
-    }
   }
 }
 
 initMatrix();
 
 function animateMatrix() {
-  mtx.fillStyle = "rgba(0, 0, 0, 0.06)";
+  const isMobile = innerWidth < 768;
+  mtx.fillStyle = `rgba(0, 0, 0, ${isMobile ? 0.12 : 0.08})`;
   mtx.fillRect(0, 0, matrix.width, matrix.height);
 
   mtx.font = "bold " + fontSize + "px monospace";
 
-  matrixStreams.forEach((stream, col) => {
-    const x = col * fontSize;
+  matrixStreams.forEach((stream) => {
+    const x = stream._col * fontSize;
 
     for (let i = 0; i < stream.length; i++) {
       const charY = stream.y - i * fontSize;
       if (charY < -fontSize || charY > matrix.height + fontSize) continue;
 
-      if (i === 0) {
-        stream.chars[i] = letters[Math.floor(Math.random() * letters.length)];
-      } else if (Math.random() < 0.02) {
-        stream.chars[i] = letters[Math.floor(Math.random() * letters.length)];
-      }
+      stream.chars[i] = LETTERS[(stream.startOffset + stream.length - 1 - i) % LETTERS_LEN];
 
       if (i === 0) {
         stream.flashTimer--;
         if (stream.flashTimer <= 0) {
           mtx.fillStyle = "#ffffff";
           mtx.shadowColor = "#ff8ec1";
-          mtx.shadowBlur = 15;
-          stream.flashTimer = 60 + Math.random() * 120;
+          mtx.shadowBlur = isMobile ? 6 : 12;
+          stream.flashTimer = 30 + Math.random() * 60;
         } else {
-          mtx.fillStyle = "#ff8ec1";
-          mtx.shadowColor = "#ff2e88";
-          mtx.shadowBlur = 10;
+          mtx.fillStyle = "#ffffff";
+          mtx.shadowColor = "#ff8ec1";
+          mtx.shadowBlur = isMobile ? 3 : 6;
         }
-      } else if (i < 3) {
-        mtx.fillStyle = "#ff2e88";
-        mtx.shadowColor = "#ff2e88";
-        mtx.shadowBlur = 5;
+      } else if (i < LETTERS_LEN) {
+        const intensity = 1 - (i / LETTERS_LEN) * 0.65;
+        const r = 255;
+        const g = Math.round(180 - (i / LETTERS_LEN) * 150);
+        const b = Math.round(200 - (i / LETTERS_LEN) * 150);
+        const glow = Math.max(0, 6 - i * 0.5);
+        mtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${intensity})`;
+        mtx.shadowColor = "#ff8ec1";
+        mtx.shadowBlur = isMobile ? Math.min(4, glow) : glow;
       } else {
-        const fade = 1 - (i / stream.length);
-        mtx.fillStyle = `rgba(179, 0, 71, ${fade * 0.8})`;
+        const fade = (1 - (i / stream.length)) * 0.3;
+        mtx.fillStyle = `rgba(80, 0, 30, ${fade})`;
         mtx.shadowBlur = 0;
       }
 
@@ -77,9 +85,11 @@ function animateMatrix() {
 
     if (stream.y - stream.length * fontSize > matrix.height) {
       stream.y = Math.random() * -100;
-      stream.length = 8 + Math.floor(Math.random() * 12);
-      while (stream.chars.length < stream.length) {
-        stream.chars.push(letters[Math.floor(Math.random() * letters.length)]);
+      stream.length = LETTERS_LEN + Math.floor(Math.random() * 7);
+      stream.startOffset = Math.floor(Math.random() * LETTERS_LEN);
+      stream.chars.length = stream.length;
+      for (let j = 0; j < stream.length; j++) {
+        stream.chars[j] = LETTERS[(stream.startOffset + stream.length - 1 - j) % LETTERS_LEN];
       }
     }
 
@@ -112,17 +122,17 @@ function drawDotText(text){
   tctx.fillText(text, temp.width/2, temp.height/2);
 
   const data = tctx.getImageData(0,0,temp.width,temp.height).data;
-  const gap = 8;
+  const gap = 4;
 
   for(let y=0;y<temp.height;y+=gap){
     for(let x=0;x<temp.width;x+=gap){
-      const index = (y*temp.width + x)*4;
-      if(data[index+3]>150){
-        ctx.fillStyle="#ff2e88";
+      const idx = (y*temp.width + x)*4;
+      if(data[idx+3]>150){
+        ctx.fillStyle="#fff";
         ctx.shadowColor="#ff2e88";
-        ctx.shadowBlur=15;
+        ctx.shadowBlur=30;
         ctx.beginPath();
-        ctx.arc(x,y,3,0,Math.PI*2);
+        ctx.arc(x,y,4,0,Math.PI*2);
         ctx.fill();
       }
     }
@@ -130,7 +140,7 @@ function drawDotText(text){
   ctx.shadowBlur=0;
 }
 
-const sequence = ["3","2","1","HAPPY","BIRTHDAY","TO","AULIA❤️"];
+const sequence = ["3","2","1","HAPPY","BIRTHDAY","TO","AULIA ❤️"];
 let seqIndex = 0;
 
 function next(){
@@ -208,6 +218,8 @@ function showFinalPage(){
   final.style.display = "flex";
   setTimeout(()=> final.classList.add("show"), 50); // fade in smooth
   startAutoSlider();
+
+  heartsActive = true;
 
   // play audio
   const audio = document.getElementById("finalAudio");
@@ -348,3 +360,37 @@ window.addEventListener('resize', () => {
   photoLove.height = innerHeight;
   initMatrix();
 });
+
+// ===== LOVE BURST ON TAP/CLICK =====
+const heartsContainer = document.getElementById("hearts-container");
+let heartsActive = false;
+
+function burstHearts(e) {
+  const x = e.clientX ?? e.touches?.[0]?.clientX ?? innerWidth / 2;
+  const y = e.clientY ?? e.touches?.[0]?.clientY ?? innerHeight / 2;
+  const emojis = ["❤️", "💖", "💗", "💕", "✨"];
+  const count = 12 + Math.floor(Math.random() * 6);
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div");
+    el.className = "heart-particle";
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 40 + Math.random() * 120;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.setProperty("--dx", dx + "px");
+    el.style.setProperty("--dy", dy + "px");
+    el.style.fontSize = (14 + Math.random() * 22) + "px";
+
+    heartsContainer.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+}
+
+document.addEventListener("click", e => { if (heartsActive) burstHearts(e); });
+document.addEventListener("touchstart", e => { if (heartsActive) burstHearts(e); });
