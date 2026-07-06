@@ -101,6 +101,14 @@ function animateMatrix() {
 
 animateMatrix();
 
+// ===== AUDIO UNLOCK (biar auto play di HP) =====
+function unlockAudio() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  ctx.resume().then(() => ctx.close());
+}
+document.addEventListener('touchstart', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+
 // ===== DOT COUNTDOWN =====
 const dotCanvas = document.getElementById("dotCanvas");
 const ctx = dotCanvas.getContext("2d");
@@ -118,8 +126,11 @@ function drawDotText(text){
 
   tctx.fillStyle="#fff";
   tctx.font="bold 140px Orbitron";
-  tctx.textAlign="center";
-  tctx.fillText(text, temp.width/2, temp.height/2);
+  tctx.textAlign="left";
+  tctx.textBaseline="middle";
+  const metrics = tctx.measureText(text);
+  const textX = (temp.width - metrics.width) / 2;
+  tctx.fillText(text, textX, temp.height/2);
 
   const data = tctx.getImageData(0,0,temp.width,temp.height).data;
   const gap = 4;
@@ -355,11 +366,18 @@ function startPhotoLove() {
   animatePhotoLove();
 }
 // resize canvas saat orientasi HP berubah
-window.addEventListener('resize', () => {
-  photoLove.width = innerWidth;
-  photoLove.height = innerHeight;
+function resizeAll() {
+  const w = innerWidth, h = innerHeight;
+  photoLove.width = w;
+  photoLove.height = h;
+  dotCanvas.width = w;
+  dotCanvas.height = h;
+  loveCanvas.width = w;
+  loveCanvas.height = h;
   initMatrix();
-});
+}
+window.addEventListener('resize', resizeAll);
+window.addEventListener('orientationchange', () => setTimeout(resizeAll, 300));
 
 // ===== LOVE BURST ON TAP/CLICK =====
 const heartsContainer = document.getElementById("hearts-container");
