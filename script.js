@@ -111,21 +111,30 @@ document.addEventListener('click', unlockAudio, { once: true });
 
 // ===== DOT COUNTDOWN =====
 const dotCanvas = document.getElementById("dotCanvas");
+const dpr = window.devicePixelRatio || 1;
+
+function resizeDotCanvas() {
+  const w = innerWidth, h = innerHeight;
+  dotCanvas.width = w * dpr;
+  dotCanvas.height = h * dpr;
+  dotCanvas.style.width = w + "px";
+  dotCanvas.style.height = h + "px";
+}
+resizeDotCanvas();
+
 const ctx = dotCanvas.getContext("2d");
-dotCanvas.width = innerWidth;
-dotCanvas.height = innerHeight;
 
 function drawDotText(text){
   ctx.clearRect(0,0,dotCanvas.width,dotCanvas.height);
 
   const temp = document.createElement("canvas");
   const tctx = temp.getContext("2d");
-
   temp.width = dotCanvas.width;
   temp.height = dotCanvas.height;
 
+  const fontSize = Math.min(120, innerWidth * 0.28) * dpr;
   tctx.fillStyle="#fff";
-  tctx.font="bold 140px Orbitron";
+  tctx.font=`bold ${fontSize}px Orbitron`;
   tctx.textAlign="left";
   tctx.textBaseline="middle";
   const metrics = tctx.measureText(text);
@@ -133,17 +142,20 @@ function drawDotText(text){
   tctx.fillText(text, textX, temp.height/2);
 
   const data = tctx.getImageData(0,0,temp.width,temp.height).data;
-  const gap = 4;
+  const fontCss = Math.min(120, innerWidth * 0.28);
+  const gap = Math.max(3, Math.floor(fontCss / 30)) * dpr;
+  const radius = Math.max(3, fontCss / 35) * dpr;
+
+  ctx.fillStyle="#fff";
+  ctx.shadowColor="#ff2e88";
+  ctx.shadowBlur=Math.min(30, fontCss * 0.25) * dpr;
 
   for(let y=0;y<temp.height;y+=gap){
     for(let x=0;x<temp.width;x+=gap){
       const idx = (y*temp.width + x)*4;
       if(data[idx+3]>150){
-        ctx.fillStyle="#fff";
-        ctx.shadowColor="#ff2e88";
-        ctx.shadowBlur=30;
         ctx.beginPath();
-        ctx.arc(x,y,4,0,Math.PI*2);
+        ctx.arc(x,y,radius,0,Math.PI*2);
         ctx.fill();
       }
     }
@@ -370,8 +382,7 @@ function resizeAll() {
   const w = innerWidth, h = innerHeight;
   photoLove.width = w;
   photoLove.height = h;
-  dotCanvas.width = w;
-  dotCanvas.height = h;
+  resizeDotCanvas();
   loveCanvas.width = w;
   loveCanvas.height = h;
   initMatrix();

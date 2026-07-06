@@ -18,7 +18,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start; /* mulai dari atas */
-    padding-top: 60px; /* jarak dari atas layar */
+    padding-top: 35px;
     opacity: 0;
     pointer-events: none;
     transition: opacity 1s ease-in-out; /* smooth fade in */
@@ -35,7 +35,7 @@ body {
     text-align: center;
     color: #fff;
     font-family: 'Playfair Display';
-    font-size: clamp(20px, 5vw, 36px);
+    font-size: clamp(16px, 4vw, 32px);
     padding: 20px 40px;
     background: rgba(255,46,136,0.15); /* box transparan romantis */
     border-radius: 20px;
@@ -49,8 +49,8 @@ body {
     font-family: 'Playfair Display', serif;
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(14px, 3.5vw, 24px);
-    margin-top: 10px;
+    font-size: clamp(11px, 2.8vw, 20px);
+    margin-top: 6px;
     color: #ffbad0;
     text-shadow: 0 0 15px #ff2e88;
   }
@@ -112,7 +112,7 @@ body {
     color: #ff2e88;
     font-family: 'Dancing Script', cursive;
     text-align: center;
-    font-size: clamp(32px, 7vw, 60px);
+    font-size: clamp(18px, 4.5vw, 44px);
     font-weight: 700;
     text-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88;
     animation: pulseGlow 2s ease-in-out infinite;
