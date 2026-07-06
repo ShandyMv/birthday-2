@@ -132,17 +132,22 @@ function drawDotText(text){
   temp.width = dotCanvas.width;
   temp.height = dotCanvas.height;
 
-  const fontSize = Math.min(120, innerWidth * 0.28) * dpr;
   tctx.fillStyle="#fff";
-  tctx.font=`bold ${fontSize}px Orbitron`;
   tctx.textAlign="left";
   tctx.textBaseline="middle";
-  const metrics = tctx.measureText(text);
-  const textX = (temp.width - metrics.width) / 2;
-  tctx.fillText(text, textX, temp.height/2);
+
+  let cssPx = Math.min(130, innerWidth * 0.35);
+  const maxW = innerWidth * 0.9 * dpr;
+  tctx.font = `bold ${cssPx * dpr}px Orbitron`;
+  while (tctx.measureText(text).width > maxW && cssPx > 16) {
+    cssPx -= 2;
+    tctx.font = `bold ${cssPx * dpr}px Orbitron`;
+  }
+  const textX = (temp.width - tctx.measureText(text).width) / 2;
+  tctx.fillText(text, textX, temp.height / 2);
 
   const data = tctx.getImageData(0,0,temp.width,temp.height).data;
-  const fontCss = Math.min(120, innerWidth * 0.28);
+  const fontCss = cssPx;
   const gap = Math.max(3, Math.floor(fontCss / 30)) * dpr;
   const radius = Math.max(3, fontCss / 35) * dpr;
 
