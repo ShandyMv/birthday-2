@@ -99,16 +99,26 @@ body {
   
   /* FRAME LAST */
   .frame {
-    background: rgba(255,46,136,0.08);
-    border: 2px dashed #ff2e88;
+    background: rgba(255,46,136,0.12);
+    border: 2px solid #ff2e88;
+    border-radius: 20px;
+    padding: 40px 20px;
+    box-shadow: 0 0 40px rgba(255,46,136,0.3);
   }
   
   .frameText {
     color: #ff2e88;
     font-family: 'Poppins';
     text-align: center;
-    font-size: 18px;
-    text-shadow: 0 0 10px #ff2e88;
+    font-size: clamp(28px, 6vw, 56px);
+    font-weight: bold;
+    text-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88;
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; text-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88; }
+    50% { opacity: 0.8; text-shadow: 0 0 40px #ff2e88, 0 0 80px #ff2e88; }
   }
   
   /* DOTS */

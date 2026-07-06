@@ -2,47 +2,94 @@
 const matrix = document.getElementById("matrix");
 const mtx = matrix.getContext("2d");
 
-matrix.width = innerWidth;
-matrix.height = innerHeight;
+const letters = "HAPPYBIRTHDAY";
+let fontSize, columns, matrixStreams;
 
-const letters = "HAPPYBIRTHDAYDEWANI";
-const fontSize = 28; // lebih gede
-const totalLetters = 120;
+function initMatrix() {
+  matrix.width = innerWidth;
+  matrix.height = innerHeight;
+  const isMobile = innerWidth < 768;
+  fontSize = isMobile ? Math.max(18, Math.min(30, innerWidth / 40)) : Math.max(16, Math.min(28, innerWidth / 50));
+  columns = Math.floor(matrix.width / fontSize);
 
-let particlesMatrix = [];
-for(let i=0;i<totalLetters;i++){
-  particlesMatrix.push({
-    x: Math.random() * matrix.width,
-    y: Math.random() * matrix.height,
-    charIndex: Math.floor(Math.random() * letters.length)
-  });
-}
-
-function drawMatrix(){
-  mtx.fillStyle="rgba(0,0,0,0.08)";
-  mtx.fillRect(0,0,matrix.width,matrix.height);
-
-  mtx.fillStyle="#ff2e88";
-  mtx.font="bold "+fontSize+"px monospace";
-  mtx.shadowColor="#ff2e88";
-  mtx.shadowBlur=10;
-
-  particlesMatrix.forEach(p=>{
-    let char = letters[p.charIndex];
-    mtx.fillText(char, p.x, p.y);
-
-    p.y += fontSize*0.5; // kecepatan turun
-
-    if(p.y > matrix.height){
-      p.y = -fontSize;
-      p.x = Math.random() * matrix.width; // x random lagi
-      p.charIndex = Math.floor(Math.random() * letters.length);
+  matrixStreams = [];
+  for (let i = 0; i < columns; i++) {
+    matrixStreams.push({
+      y: Math.random() * -matrix.height,
+      speed: 0.4 + Math.random() * 0.6,
+      chars: [],
+      length: 8 + Math.floor(Math.random() * 12),
+      flashTimer: Math.random() * 100
+    });
+    for (let j = 0; j < matrixStreams[i].length; j++) {
+      matrixStreams[i].chars.push(letters[Math.floor(Math.random() * letters.length)]);
     }
+  }
+}
+
+initMatrix();
+
+function animateMatrix() {
+  mtx.fillStyle = "rgba(0, 0, 0, 0.06)";
+  mtx.fillRect(0, 0, matrix.width, matrix.height);
+
+  mtx.font = "bold " + fontSize + "px monospace";
+
+  matrixStreams.forEach((stream, col) => {
+    const x = col * fontSize;
+
+    for (let i = 0; i < stream.length; i++) {
+      const charY = stream.y - i * fontSize;
+      if (charY < -fontSize || charY > matrix.height + fontSize) continue;
+
+      if (i === 0) {
+        stream.chars[i] = letters[Math.floor(Math.random() * letters.length)];
+      } else if (Math.random() < 0.02) {
+        stream.chars[i] = letters[Math.floor(Math.random() * letters.length)];
+      }
+
+      if (i === 0) {
+        stream.flashTimer--;
+        if (stream.flashTimer <= 0) {
+          mtx.fillStyle = "#ffffff";
+          mtx.shadowColor = "#ff8ec1";
+          mtx.shadowBlur = 15;
+          stream.flashTimer = 60 + Math.random() * 120;
+        } else {
+          mtx.fillStyle = "#ff8ec1";
+          mtx.shadowColor = "#ff2e88";
+          mtx.shadowBlur = 10;
+        }
+      } else if (i < 3) {
+        mtx.fillStyle = "#ff2e88";
+        mtx.shadowColor = "#ff2e88";
+        mtx.shadowBlur = 5;
+      } else {
+        const fade = 1 - (i / stream.length);
+        mtx.fillStyle = `rgba(179, 0, 71, ${fade * 0.8})`;
+        mtx.shadowBlur = 0;
+      }
+
+      mtx.fillText(stream.chars[i], x, charY);
+    }
+
+    stream.y += stream.speed * fontSize;
+
+    if (stream.y - stream.length * fontSize > matrix.height) {
+      stream.y = Math.random() * -100;
+      stream.length = 8 + Math.floor(Math.random() * 12);
+      while (stream.chars.length < stream.length) {
+        stream.chars.push(letters[Math.floor(Math.random() * letters.length)]);
+      }
+    }
+
+    mtx.shadowBlur = 0;
   });
 
-  mtx.shadowBlur=0;
+  requestAnimationFrame(animateMatrix);
 }
-setInterval(drawMatrix,30);
+
+animateMatrix();
 
 // ===== DOT COUNTDOWN =====
 const dotCanvas = document.getElementById("dotCanvas");
@@ -83,7 +130,7 @@ function drawDotText(text){
   ctx.shadowBlur=0;
 }
 
-const sequence = ["3","2","1","HAPPY","BIRTHDAY","TO","DEWANI ❤️"];
+const sequence = ["3","2","1","HAPPY","BIRTHDAY","TO","AULIA❤️"];
 let seqIndex = 0;
 
 function next(){
@@ -112,7 +159,7 @@ function createHeartParticles(){
     let x = 16*Math.pow(Math.sin(t),3);
     let y = 13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
 
-    for(let i=0;i<3;i++){
+    for(let i=0;i<2;i++){
       heartParticles.push({
         x: Math.random()*innerWidth,
         y: Math.random()*innerHeight,
@@ -137,7 +184,7 @@ function animateHeart(){
 
     lctx.globalAlpha = p.alpha;
     lctx.shadowColor="#ff2e88";
-    lctx.shadowBlur=15;
+    lctx.shadowBlur=8;
     lctx.fillStyle="#ff2e88";
     lctx.fillRect(p.x-p.size/2,p.y-p.size/2+floatY,p.size,p.size);
   });
@@ -207,7 +254,7 @@ photoLove.width=innerWidth;
 photoLove.height=innerHeight;
 
 const imgs=[];
-["foto1.jpg","foto2.jpg","foto3.jpg","foto4.jpg"].forEach(src=>{
+["foto1.jpeg","foto2.jpeg","foto3.jpeg","foto4.jpeg"].forEach(src=>{
   let img=new Image();
   img.src=src;
   imgs.push(img);
@@ -217,63 +264,62 @@ function startPhotoLove() {
   document.getElementById("finalPage").style.display = "none";
   photoLove.style.display = "block";
 
-  // responsive canvas
   photoLove.width = innerWidth;
   photoLove.height = innerHeight;
 
   let particles = [];
-  const screenScale = Math.min(innerWidth, innerHeight) / 30; // ukuran love
-  const density = 0.1; // jarak antar titik love
-  const floatAmplitude = 4; // efek floating
+  const isMobile = innerWidth < 768;
+  const screenScale = Math.min(innerWidth, innerHeight) / 30;
+  const density = isMobile ? 0.15 : 0.1;
+  const floatAmplitude = 4;
 
-  // bikin posisi love dulu
-  let targets = [];
-  for (let t = 0; t < Math.PI * 2; t += density) {
-      const x = 16 * Math.pow(Math.sin(t), 3);
-      const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-      targets.push({
-          x: innerWidth / 2 + x * screenScale,
-          y: innerHeight / 2 - y * screenScale
-      });
-  }
+  let t = 0;
+  const spawnInterval = isMobile ? 80 : 60;
 
-  let spawnIndex = 0;
-  const spawnInterval = 60; // ms per foto muncul
   function spawnParticle() {
-      if (spawnIndex >= targets.length) return;
+      if (t >= Math.PI * 2) return;
 
       particles.push({
-          x: innerWidth / 2, // spawn di tengah layar
+          x: innerWidth / 2,
           y: innerHeight / 2,
-          targetX: targets[spawnIndex].x + (Math.random()-0.5)*5,
-          targetY: targets[spawnIndex].y + (Math.random()-0.5)*5,
-          img: imgs[Math.floor(Math.random()*imgs.length)],
+          t: t,
+          img: imgs[Math.floor(Math.random() * imgs.length)],
           alpha: 0,
           scale: 0,
-          floatOffset: Math.random()*Math.PI*2
+          floatOffset: Math.random() * Math.PI * 2
       });
-      spawnIndex++;
+      t += density;
       setTimeout(spawnParticle, spawnInterval);
   }
   spawnParticle();
+
+  let globalRotation = 0;
+  let canMove = false;
+  const totalSpawnTime = (Math.PI * 2 / density) * spawnInterval;
+  setTimeout(() => { canMove = true; }, totalSpawnTime + 1500);
 
   let time = 0;
   function animatePhotoLove() {
       plctx.clearRect(0, 0, photoLove.width, photoLove.height);
       time += 0.02;
 
+      if (canMove) globalRotation += 0.005;
+
       particles.forEach(p => {
-          // move ke target
-          p.x += (p.targetX - p.x) * 0.08;
-          p.y += (p.targetY - p.y) * 0.08;
+          const angle = p.t + globalRotation;
+          const hx = 16 * Math.pow(Math.sin(angle), 3);
+          const hy = 13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle);
 
-          // fade in
+          const targetX = innerWidth / 2 + hx * screenScale;
+          const targetY = innerHeight / 2 - hy * screenScale;
+
+          const lerp = canMove ? 0.15 : 0.06;
+          p.x += (targetX - p.x) * lerp;
+          p.y += (targetY - p.y) * lerp;
+
           p.alpha += (1 - p.alpha) * 0.05;
-
-          // scale naik perlahan
           p.scale += (1 - p.scale) * 0.05;
 
-          // floating effect
           const floatY = Math.sin(time + p.floatOffset) * floatAmplitude;
 
           const ratio = p.img.width / p.img.height;
@@ -285,8 +331,8 @@ function startPhotoLove() {
 
           plctx.globalAlpha = p.alpha;
           plctx.shadowColor = "#ff2e88";
-          plctx.shadowBlur = 15;
-          plctx.drawImage(p.img, p.x - w/2, p.y - h/2 + floatY, w, h);
+          plctx.shadowBlur = isMobile ? 5 : 10;
+          plctx.drawImage(p.img, p.x - w / 2, p.y - h / 2 + floatY, w, h);
       });
 
       plctx.globalAlpha = 1;
@@ -300,4 +346,5 @@ function startPhotoLove() {
 window.addEventListener('resize', () => {
   photoLove.width = innerWidth;
   photoLove.height = innerHeight;
+  initMatrix();
 });
